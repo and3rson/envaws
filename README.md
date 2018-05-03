@@ -2,10 +2,16 @@
 
 Run application with environment loaded from AWS SSM.
 
+# installation
+
+```
+pip install envaws
+```
+
 # usage
 
 ```
-usage: envaws.py [-h] [-p PROFILE] [-r REGION] -k KEY_PREFIX command ...
+usage: envaws [-h] [-p PROFILE] [-r REGION] -k KEY_PREFIX command ...
 
 Run application with environment loaded from AWS SSM.
 
