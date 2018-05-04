@@ -38,27 +38,37 @@ def main(key_prefix, command, args, profile=None, region=None):
     session = boto3.Session(**boto_kwargs)
     ssm = session.client('ssm')
 
-    parameters = ssm.describe_parameters(
+    parameters_iter = ssm.get_paginator('describe_parameters').paginate(
         Filters=[
             {
                 'Key': 'Name',
                 'Values': [key_prefix]
             }
-        ]
-    )['Parameters']
+        ],
+        MaxResults=10
+    )
+
+    parameters = []
+    for page in parameters_iter:
+        parameters.extend(page['Parameters'])
 
     parameter_names = [parameter['Name'] for parameter in parameters]
 
-    parameter_names_values = ssm.get_parameters(
-        Names=parameter_names,
-        WithDecryption=True
-    )['Parameters']
+    env = {}
 
-    env = {
-        parameter['Name'].rpartition('/')[2]: parameter['Value']
-        for parameter
-        in parameter_names_values
-    }
+    parameter_name_batch = []
+    for i, parameter_name in enumerate(parameter_names):
+        parameter_name_batch.append(parameter_name)
+        if len(parameter_name_batch) == 10 or i == len(parameter_names) - 1:
+            env.update({
+                parameter['Name'].rpartition('/')[2]: parameter['Value']
+                for parameter
+                in ssm.get_parameters(
+                    Names=parameter_name_batch,
+                    WithDecryption=True
+                )['Parameters']
+            })
+            parameter_name_batch = []
 
     sys.stderr.write('Retrieved {} parameters:\n'.format(len(env)))
     for key in env:
