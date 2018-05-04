@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='envaws',
-    version='0.1',
+    version='0.2',
     description='Run application with environment loaded from AWS SSM.',
     author='Andrew Dunai',
     author_email='a@dun.ai',
